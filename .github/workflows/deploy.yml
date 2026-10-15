@@ -29,8 +29,8 @@ jobs:
           server-dir: /public_html/
           protocol: ftps
           port: 21
-          # ONE-TIME cleanup: wipe server files (.git/.github) not in repo, then set back to false
-          dangerous-clean-slate: true
+          # Keep server in sync: delete files on server that are no longer in repo
+          dangerous-clean-slate: false
           # Exclude git/github files from deployment
           exclude: |
             .git/**
