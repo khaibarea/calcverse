@@ -29,11 +29,11 @@ jobs:
           server-dir: /public_html/
           protocol: ftps
           port: 21
-          # Delete local files on server that are no longer in repo
-          dangerous-clean-slate: false
-          # Exclude git/github files from deployment (action defaults + explicit)
+          # ONE-TIME cleanup: wipe server files (.git/.github) not in repo, then set back to false
+          dangerous-clean-slate: true
+          # Exclude git/github files from deployment
           exclude: |
-            .git*
-            .github*
+            .git/**
+            .github/**
             .gitignore
             .ftp-deploy-sync-state.json
