@@ -26,12 +26,14 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /
+          server-dir: /public_html/
           protocol: ftps
           port: 21
           # Delete local files on server that are no longer in repo
           dangerous-clean-slate: false
-          # Exclude git files from deployment
+          # Exclude git/github files from deployment (action defaults + explicit)
           exclude: |
             .git*
-            .github/**
+            .github*
+            .gitignore
+            .ftp-deploy-sync-state.json
