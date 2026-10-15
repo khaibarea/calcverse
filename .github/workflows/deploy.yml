@@ -21,7 +21,7 @@ jobs:
       # Uses your Namecheap "FTP Username" and "FTP Password"
       # from cPanel > Files > FTP Accounts
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
