@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CalcVerse - a modern unit converter and calculator website">
+<title>CalcVerse — Smart Unit Converter & Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-1: #0b1020;
+    --bg-2: #121a33;
+    --bg-3: #1a1033;
+    --card: rgba(255, 255, 255, 0.06);
+    --card-2: rgba(255, 255, 255, 0.09);
+    --border: rgba(255, 255, 255, 0.12);
+    --text: #eaf0ff;
+    --muted: #9aa7c7;
+    --accent: #7c3aed;
+    --accent-2: #06b6d4;
+    --accent-3: #f472b6;
+    --grad: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+    --grad-2: linear-gradient(135deg, #f472b6 0%, #7c3aed 100%);
+    --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 800px at 10% 10%, #1a1033 0%, transparent 60%),
+                radial-gradient(1000px 700px at 90% 90%, #0b2a3a 0%, transparent 60%),
+                linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 50%, var(--bg-3) 100%);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  .bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.35;
+    animation: float 18s ease-in-out infinite;
+  }
+  .blob.b1 { width: 420px; height: 420px; background: #7c3aed; top: -100px; left: -100px; animation-delay: 0s; }
+  .blob.b2 { width: 360px; height: 360px; background: #06b6d4; bottom: -80px; right: -80px; animation-delay: 4s; }
+  .blob.b3 { width: 300px; height: 300px; background: #f472b6; top: 40%; left: 50%; animation-delay: 8s; }
+  @keyframes float {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.1); }
+    66% { transform: translate(-30px, 40px) scale(0.95); }
+  }
+
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(11,16,32,0.55);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 1.25rem; letter-spacing: 0.5px;
+    background: var(--grad); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo svg { filter: drop-shadow(0 0 8px rgba(124,58,237,0.6)); }
+  .menu { display: flex; gap: 6px; align-items: center; list-style: none; }
+  .menu a {
+    color: var(--text); text-decoration: none; padding: 8px 14px; border-radius: 10px;
+    font-weight: 500; font-size: 0.95rem; transition: all 0.25s ease;
+  }
+  .menu a:hover { background: var(--card-2); color: #fff; }
+  .menu .cta {
+    background: var(--grad); color: #fff; padding: 9px 18px;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+  }
+  .menu .cta:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(124,58,237,0.6); }
+  .hamburger { display: none; background: none; border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+  .mobile-menu { display: none; }
+  @media (max-width: 780px) {
+    .menu { display: none; }
+    .hamburger { display: block; }
+    .mobile-menu.open {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 12px 24px 16px; border-top: 1px solid var(--border);
+    }
+    .mobile-menu a {
+      color: var(--text); text-decoration: none; padding: 10px 12px; border-radius: 10px;
+    }
+    .mobile-menu a:hover { background: var(--card-2); }
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  .hero {
+    padding: 80px 0 60px; text-align: center; position: relative;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; color: var(--muted);
+    margin-bottom: 22px; backdrop-filter: blur(10px);
+    animation: fadeInUp 0.8s ease both;
+  }
+  .hero-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e; animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.6; } }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 900; line-height: 1.15;
+    letter-spacing: -0.02em; margin-bottom: 18px;
+    animation: fadeInUp 0.9s ease 0.1s both;
+  }
+  .hero h1 .grad {
+    background: var(--grad); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero p {
+    font-size: clamp(1rem, 1.6vw, 1.2rem); color: var(--muted);
+    max-width: 680px; margin: 0 auto 32px;
+    animation: fadeInUp 1s ease 0.2s both;
+  }
+  .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 1.1s ease 0.3s both; }
+  .btn {
+    border: none; cursor: pointer; font-family: inherit; font-weight: 600;
+    padding: 13px 26px; border-radius: 12px; font-size: 1rem;
+    display: inline-flex; align-items: center; gap: 9px;
+    transition: all 0.25s ease; text-decoration: none;
+  }
+  .btn.primary { background: var(--grad); color: #fff; box-shadow: 0 8px 24px rgba(124,58,237,0.45); }
+  .btn.primary:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(124,58,237,0.65); }
+  .btn.ghost { background: var(--card); color: var(--text); border: 1px solid var(--border); backdrop-filter: blur(10px); }
+  .btn.ghost:hover { background: var(--card-2); transform: translateY(-2px); }
+  .hero-stats {
+    display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    margin-top: 48px; animation: fadeInUp 1.2s ease 0.4s both;
+  }
+  .stat { text-align: center; }
+  .stat .num { font-size: 2rem; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat .lbl { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  section.block { padding: 60px 0; }
+  .section-head { text-align: center; margin-bottom: 36px; }
+  .section-head .eyebrow {
+    display: inline-block; color: var(--accent-2); font-weight: 600; font-size: 0.85rem;
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .section-head h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; margin-bottom: 10px; }
+  .section-head p { color: var(--muted); max-width: 600px; margin: 0 auto; }
+
+  .mode-tabs {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 28px;
+    background: var(--card); padding: 6px; border-radius: 14px;
+    border: 1px solid var(--border); width: fit-content; margin-inline: auto;
+    backdrop-filter: blur(10px);
+  }
+  .mode-tab {
+    background: none; border: none; color: var(--muted); font-family: inherit;
+    padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600;
+    transition: all 0.25s; display: flex; align-items: center; gap: 8px;
+  }
+  .mode-tab.active { background: var(--grad); color: #fff; box-shadow: 0 6px 18px rgba(124,58,237,0.4); }
+
+  .chips {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 24px;
+  }
+  .chip {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; font-family: inherit;
+    font-weight: 500; font-size: 0.9rem; transition: all 0.25s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip:hover { background: var(--card-2); color: var(--text); }
+  .chip.active { background: var(--grad); color: #fff; border-color: transparent; }
+
+  .conv-card {
+    max-width: 760px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 32px;
+    backdrop-filter: blur(14px); box-shadow: var(--shadow);
+    position: relative; overflow: hidden;
+  }
+  .conv-card::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(6,182,212,0.08));
+  }
+  .conv-row { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 12px; align-items: end; position: relative; z-index: 1; }
+  @media (max-width: 640px) {
+    .conv-row { grid-template-columns: 1fr; }
+    .swap-btn { margin: 4px auto; transform: rotate(90deg); }
+  }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-size: 0.8rem; color: var(--muted); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+  .field input, .field select {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--border);
+    color: var(--text); padding: 14px 16px; border-radius: var(--radius-sm);
+    font-size: 1.15rem; font-family: inherit; font-weight: 600;
+    outline: none; transition: all 0.25s;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(124,58,237,0.25);
+  }
+  .swap-btn {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--grad); border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s; box-shadow: 0 6px 18px rgba(124,58,237,0.4);
+    align-self: flex-end; margin-bottom: 4px;
+  }
+  .swap-btn:hover { transform: rotate(180deg) scale(1.05); }
+  .result-bar {
+    margin-top: 24px; padding: 18px; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .result-bar .label { color: var(--muted); font-size: 0.9rem; }
+  .result-bar .value {
+    font-size: 1.6rem; font-weight: 800;
+    background: var(--grad-2); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .formula { margin-top: 14px; color: var(--muted); font-size: 0.85rem; text-align: center; }
+
+  .std-calc {
+    max-width: 420px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+    backdrop-filter: blur(14px); box-shadow: var(--shadow);
+    display: none;
+  }
+  .std-calc.show { display: block; }
+  .std-display {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px; text-align: right; margin-bottom: 16px;
+    min-height: 90px; display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .std-display .expr { color: var(--muted); font-size: 0.95rem; min-height: 20px; word-break: break-all; }
+  .std-display .val { color: var(--text); font-size: 2rem; font-weight: 700; word-break: break-all; }
+  .std-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .std-grid button {
+    background: var(--card-2); border: 1px solid var(--border); color: var(--text);
+    padding: 18px 0; border-radius: 12px; font-size: 1.15rem; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: all 0.18s;
+  }
+  .std-grid button:hover { background: rgba(255,255,255,0.15); transform: translateY(-1px); }
+  .std-grid button:active { transform: scale(0.96); }
+  .std-grid button.op { background: rgba(124,58,237,0.25); color: #c4b5fd; }
+  .std-grid button.op:hover { background: rgba(124,58,237,0.4); }
+  .std-grid button.eq { background: var(--grad); color: #fff; grid-column: span 2; }
+  .std-grid button.eq:hover { box-shadow: 0 6px 18px rgba(124,58,237,0.5); }
+  .std-grid button.zero { grid-column: span 2; }
+  .std-grid button.clear { background: rgba(244,114,182,0.2); color: #f9a8d4; }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; }
+  .feature-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px; transition: all 0.3s; backdrop-filter: blur(10px);
+  }
+  .feature-card:hover { transform: translateY(-6px); background: var(--card-2); box-shadow: 0 16px 40px rgba(0,0,0,0.3); }
+  .feature-card .icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    background: var(--grad); color: #fff; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; box-shadow: 0 6px 18px rgba(124,58,237,0.4);
+  }
+  .feature-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .feature-card p { color: var(--muted); font-size: 0.92rem; }
+
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 780px) { .about-grid { grid-template-columns: 1fr; } }
+  .about-text p { color: var(--muted); margin-bottom: 16px; }
+  .about-visual {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 30px; min-height: 280px; backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+
+  .contact {
+    max-width: 760px; margin: 0 auto;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 36px; backdrop-filter: blur(14px);
+  }
+  .contact form { display: grid; gap: 16px; }
+  .contact .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .contact .row { grid-template-columns: 1fr; } }
+  .contact input, .contact textarea {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: var(--text);
+    padding: 14px 16px; border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem;
+    outline: none; transition: border 0.25s; width: 100%;
+  }
+  .contact input:focus, .contact textarea:focus { border-color: var(--accent); }
+  .contact textarea { resize: vertical; min-height: 120px; }
+
+  footer.site {
+    border-top: 1px solid var(--border); margin-top: 60px;
+    padding: 40px 0 24px; background: rgba(0,0,0,0.3);
+  }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 780px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  .footer-grid h4 { margin-bottom: 12px; font-size: 1rem; }
+  .footer-grid ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .footer-grid a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.25s; }
+  .footer-grid a:hover { color: var(--text); }
+  .footer-bottom {
+    max-width: 1200px; margin: 24px auto 0; padding: 16px 24px 0;
+    border-top: 1px solid var(--border); color: var(--muted); font-size: 0.85rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--grad); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-weight: 600; box-shadow: var(--shadow); transition: transform 0.3s; z-index: 100;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="bg-blobs">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<header class="site">
+  <nav class="nav">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+      CalcVerse
+    </div>
+    <ul class="menu">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#tools">Tools</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact" class="cta">Contact</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#home">Home</a>
+    <a href="#tools">Tools</a>
+    <a href="#features">Features</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+</header>
+
+<main>
+  <section id="home" class="hero container">
+    <div class="hero-badge"><span class="dot"></span> Free Forever • No Sign Up</div>
+    <h1>Your Smart <span class="grad">Calculator</span><br>&amp; Unit Converter</h1>
+    <p>Convert days to years, meters to feet, kilograms to pounds — in one click. Fast, beautiful, and completely free.</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#tools">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Start Calculating
+      </a>
+      <a class="btn ghost" href="#features">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Learn More
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="num" data-target="8">0</div><div class="lbl">Unit Categories</div></div>
+      <div class="stat"><div class="num" data-target="50">0</div><div class="lbl">Conversion Units</div></div>
+      <div class="stat"><div class="num" data-target="100">0</div><div class="lbl">% Accuracy</div></div>
+      <div class="stat"><div class="num" data-target="24">0</div><div class="lbl">/7 Availability</div></div>
+    </div>
+  </section>
+
+  <section id="tools" class="block container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Tools</span>
+      <h2>Convert &amp; Calculate</h2>
+      <p>Pick the mode that fits your needs</p>
+    </div>
+
+    <div class="mode-tabs reveal">
+      <button class="mode-tab active" data-mode="converter">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        Unit Converter
+      </button>
+      <button class="mode-tab" data-mode="standard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/></svg>
+        Standard Calculator
+      </button>
+    </div>
+
+    <div class="chips reveal" id="chips">
+      <button class="chip active" data-cat="time">⏱️ Time</button>
+      <button class="chip" data-cat="length">📏 Length</button>
+      <button class="chip" data-cat="weight">⚖️ Weight</button>
+      <button class="chip" data-cat="temp">🌡️ Temperature</button>
+      <button class="chip" data-cat="volume">🧪 Volume</button>
+      <button class="chip" data-cat="speed">🚀 Speed</button>
+      <button class="chip" data-cat="area">⬜ Area</button>
+      <button class="chip" data-cat="data">💾 Data</button>
+    </div>
+
+    <div class="conv-card reveal" id="converterCard">
+      <div class="conv-row">
+        <div class="field">
+          <label>Input Value</label>
+          <input type="number" id="inputVal" value="365" step="any" placeholder="0">
+          <select id="fromUnit"></select>
+        </div>
+        <button class="swap-btn" id="swapBtn" title="Swap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        </button>
+        <div class="field">
+          <label>Output Value</label>
+          <input type="text" id="outputVal" readonly>
+          <select id="toUnit"></select>
+        </div>
+      </div>
+      <div class="result-bar">
+        <span class="label">Result:</span>
+        <span class="value" id="resultText">—</span>
+      </div>
+      <p class="formula" id="formulaText"></p>
+    </div>
+
+    <div class="std-calc" id="stdCalc">
+      <div class="std-display">
+        <div class="expr" id="stdExpr"></div>
+        <div class="val" id="stdVal">0</div>
+      </div>
+      <div class="std-grid">
+        <button class="clear" data-act="clear">AC</button>
+        <button class="op" data-act="sign">+/−</button>
+        <button class="op" data-act="percent">%</button>
+        <button class="op" data-op="/">÷</button>
+
+        <button data-num="7">7</button>
+        <button data-num="8">8</button>
+        <button data-num="9">9</button>
+        <button class="op" data-op="*">×</button>
+
+        <button data-num="4">4</button>
+        <button data-num="5">5</button>
+        <button data-num="6">6</button>
+        <button class="op" data-op="-">−</button>
+
+        <button data-num="1">1</button>
+        <button data-num="2">2</button>
+        <button data-num="3">3</button>
+        <button class="op" data-op="+">+</button>
+
+        <button class="zero" data-num="0">0</button>
+        <button data-num=".">.</button>
+        <button class="eq" data-act="equals">=</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="block container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Features</span>
+      <h2>Why Choose CalcVerse?</h2>
+      <p>Your complete solution for everyday calculations and conversions</p>
+    </div>
+    <div class="features">
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <h3>Ultra Fast</h3>
+        <p>Real-time conversion — see results as you type</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3>Responsive Design</h3>
+        <p>Flawless on mobile, tablet, or desktop</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Safe &amp; Offline</h3>
+        <p>No data collected, runs entirely in your browser</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Multi-Category</h3>
+        <p>Time, length, weight, temperature, volume and more</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        </div>
+        <h3>Quick Presets</h3>
+        <p>Save common conversions for instant access</p>
+      </div>
+      <div class="feature-card reveal">
+        <div class="icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Multi-Language</h3>
+        <p>Built to support multiple languages</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="block container">
+    <div class="about-grid reveal">
+      <div class="about-text">
+        <span style="color: var(--accent-2); font-weight:600; letter-spacing:1.5px; text-transform:uppercase; font-size:0.85rem;">About Us</span>
+        <h2 style="font-size: clamp(1.8rem, 3vw, 2.3rem); margin: 8px 0 16px;">About CalcVerse</h2>
+        <p>CalcVerse is a modern, beautiful, and free web-based unit converter and calculator. Our goal is to provide everyone with simple, fast, and accurate conversion services.</p>
+        <p>We believe tools should be free, ad-free, and privacy-first. That's why all calculations in CalcVerse run in your browser — no data is ever sent to a server.</p>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+          <li style="display:flex; align-items:center; gap:8px;"><span style="color:#22c55e;">✔</span> 100% free, no sign-up required</li>
+          <li style="display:flex; align-items:center; gap:8px;"><span style="color:#22c55e;">✔</span> Open-source friendly architecture</li>
+          <li style="display:flex; align-items:center; gap:8px;"><span style="color:#22c55e;">✔</span> GitHub auto-deployment support</li>
+          <li style="display:flex; align-items:center; gap:8px;"><span style="color:#22c55e;">✔</span> Fast loading &amp; animated UI</li>
+        </ul>
+      </div>
+      <div class="about-visual">
+        <svg width="220" height="220" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7c3aed"/>
+              <stop offset="100%" stop-color="#06b6d4"/>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="90" fill="none" stroke="url(#g1)" stroke-width="4" stroke-dasharray="6 6"/>
+          <circle cx="100" cy="100" r="60" fill="none" stroke="url(#g1)" stroke-width="3" opacity="0.6"/>
+          <circle cx="100" cy="100" r="30" fill="url(#g1)" opacity="0.9"/>
+          <text x="100" y="108" text-anchor="middle" fill="#fff" font-size="22" font-weight="800">=</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="block container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Contact</span>
+      <h2>Get in Touch</h2>
+      <p>Send us your questions, suggestions, or feedback</p>
+    </div>
+    <div class="contact reveal">
+      <form id="contactForm">
+        <div class="row">
+          <input type="text" placeholder="Your Name" required>
+          <input type="email" placeholder="Your Email" required>
+        </div>
+        <input type="text" placeholder="Subject">
+        <textarea placeholder="Your Message..." required></textarea>
+        <button class="btn primary" type="submit" style="justify-self:start;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          Send Message
+        </button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="footer-grid">
+    <div>
+      <div class="logo" style="margin-bottom:12px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="12" y1="10" x2="14" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="12" y1="14" x2="14" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+        CalcVerse
+      </div>
+      <p style="color:var(--muted); font-size:0.9rem;">A free, smart calculator and unit converter for everyone.</p>
+    </div>
+    <div>
+      <h4>Links</h4>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#tools">Tools</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Units</h4>
+      <ul>
+        <li><a href="#tools">Time</a></li>
+        <li><a href="#tools">Length</a></li>
+        <li><a href="#tools">Weight</a></li>
+        <li><a href="#tools">Temperature</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#contact">Email</a></li>
+        <li><a href="#contact">Feedback</a></li>
+        <li><a href="#">GitHub</a></li>
+        <li><a href="#">X / Twitter</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> CalcVerse. All rights reserved.</span>
+    <span>Made with ❤️ for everyone</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Done!</div>
+
+<script>
+(function() {
+  const CATEGORIES = {
+    time: {
+      name: 'Time',
+      units: {
+        second: { label: 'Second (s)', factor: 1 },
+        minute: { label: 'Minute (min)', factor: 60 },
+        hour:   { label: 'Hour (h)', factor: 3600 },
+        day:    { label: 'Day (d)', factor: 86400 },
+        week:   { label: 'Week (wk)', factor: 604800 },
+        month:  { label: 'Month (mo)', factor: 2629800 },
+        year:   { label: 'Year (yr)', factor: 31557600 },
+      },
+      defaultFrom: 'day', defaultTo: 'year'
+    },
+    length: {
+      name: 'Length',
+      units: {
+        mm:   { label: 'Millimeter (mm)', factor: 0.001 },
+        cm:   { label: 'Centimeter (cm)', factor: 0.01 },
+        m:    { label: 'Meter (m)', factor: 1 },
+        km:   { label: 'Kilometer (km)', factor: 1000 },
+        inch: { label: 'Inch (in)', factor: 0.0254 },
+        ft:   { label: 'Foot (ft)', factor: 0.3048 },
+        yard: { label: 'Yard (yd)', factor: 0.9144 },
+        mile: { label: 'Mile (mi)', factor: 1609.344 },
+      },
+      defaultFrom: 'm', defaultTo: 'ft'
+    },
+    weight: {
+      name: 'Weight',
+      units: {
+        mg:  { label: 'Milligram (mg)', factor: 0.001 },
+        g:   { label: 'Gram (g)', factor: 1 },
+        kg:  { label: 'Kilogram (kg)', factor: 1000 },
+        ton: { label: 'Ton (t)', factor: 1000000 },
+        oz:  { label: 'Ounce (oz)', factor: 28.3495 },
+        lb:  { label: 'Pound (lb)', factor: 453.592 },
+      },
+      defaultFrom: 'kg', defaultTo: 'lb'
+    },
+    temp: {
+      name: 'Temperature',
+      units: {
+        c: { label: 'Celsius (°C)' },
+        f: { label: 'Fahrenheit (°F)' },
+        k: { label: 'Kelvin (K)' },
+      },
+      defaultFrom: 'c', defaultTo: 'f',
+      convert: (v, from, to) => {
+        let c;
+        if (from === 'c') c = v;
+        else if (from === 'f') c = (v - 32) * 5/9;
+        else c = v - 273.15;
+        if (to === 'c') return c;
+        if (to === 'f') return c * 9/5 + 32;
+        return c + 273.15;
+      }
+    },
+    volume: {
+      name: 'Volume',
+      units: {
+        ml:   { label: 'Milliliter (ml)', factor: 0.001 },
+        l:    { label: 'Liter (L)', factor: 1 },
+        cup:  { label: 'Cup (cup)', factor: 0.236588 },
+        pint: { label: 'Pint (pt)', factor: 0.473176 },
+        quart:{ label: 'Quart (qt)', factor: 0.946353 },
+        gal:  { label: 'Gallon (gal)', factor: 3.78541 },
+        m3:   { label: 'Cubic Meter (m³)', factor: 1000 },
+      },
+      defaultFrom: 'l', defaultTo: 'gal'
+    },
+    speed: {
+      name: 'Speed',
+      units: {
+        'm/s':  { label: 'Meter/Second (m/s)', factor: 1 },
+        'km/h': { label: 'Kilometer/Hour (km/h)', factor: 0.277778 },
+        mph:    { label: 'Mile/Hour (mph)', factor: 0.44704 },
+        knot:   { label: 'Knot (kn)', factor: 0.514444 },
+      },
+      defaultFrom: 'km/h', defaultTo: 'mph'
+    },
+    area: {
+      name: 'Area',
+      units: {
+        m2:     { label: 'Square Meter (m²)', factor: 1 },
+        km2:    { label: 'Square Kilometer (km²)', factor: 1e6 },
+        ft2:    { label: 'Square Foot (ft²)', factor: 0.092903 },
+        acre:   { label: 'Acre (acre)', factor: 4046.86 },
+        hectare:{ label: 'Hectare (ha)', factor: 10000 },
+      },
+      defaultFrom: 'm2', defaultTo: 'ft2'
+    },
+    data: {
+      name: 'Data',
+      units: {
+        bit:  { label: 'Bit (bit)', factor: 0.125 },
+        byte: { label: 'Byte (B)', factor: 1 },
+        kb:   { label: 'Kilobyte (KB)', factor: 1000 },
+        mb:   { label: 'Megabyte (MB)', factor: 1e6 },
+        gb:   { label: 'Gigabyte (GB)', factor: 1e9 },
+        tb:   { label: 'Terabyte (TB)', factor: 1e12 },
+      },
+      defaultFrom: 'gb', defaultTo: 'mb'
+    }
+  };
+
+  let currentCat = 'time';
+  let currentMode = 'converter';
+
+  const inputVal = document.getElementById('inputVal');
+  const outputVal = document.getElementById('outputVal');
+  const fromUnit = document.getElementById('fromUnit');
+  const toUnit = document.getElementById('toUnit');
+  const resultText = document.getElementById('resultText');
+  const formulaText = document.getElementById('formulaText');
+  const chips = document.getElementById('chips');
+  const converterCard = document.getElementById('converterCard');
+  const stdCalc = document.getElementById('stdCalc');
+
+  function populateUnits(cat) {
+    const c = CATEGORIES[cat];
+    fromUnit.innerHTML = '';
+    toUnit.innerHTML = '';
+    Object.keys(c.units).forEach(k => {
+      const o1 = document.createElement('option');
+      o1.value = k; o1.textContent = c.units[k].label;
+      fromUnit.appendChild(o1);
+      const o2 = document.createElement('option');
+      o2.value = k; o2.textContent = c.units[k].label;
+      toUnit.appendChild(o2);
+    });
+    fromUnit.value = c.defaultFrom;
+    toUnit.value = c.defaultTo;
+  }
+
+  function fmtNum(n) {
+    if (!isFinite(n)) return '—';
+    if (Math.abs(n) >= 1e15 || (Math.abs(n) < 1e-6 && n !== 0)) {
+      return n.toExponential(6);
+    }
+    return n.toLocaleString('en-US', { maximumFractionDigits: 8 });
+  }
+
+  function convert() {
+    const cat = CATEGORIES[currentCat];
+    const from = fromUnit.value;
+    const to = toUnit.value;
+    const v = parseFloat(inputVal.value);
+    if (isNaN(v)) {
+      outputVal.value = '';
+      resultText.textContent = '—';
+      formulaText.textContent = '';
+      return;
+    }
+    let res;
+    if (cat.convert) {
+      res = cat.convert(v, from, to);
+    } else {
+      res = v * (cat.units[from].factor / cat.units[to].factor);
+    }
+    outputVal.value = fmtNum(res);
+    resultText.textContent = `${fmtNum(v)} ${from} = ${fmtNum(res)} ${to}`;
+    if (!cat.convert) {
+      const f = cat.units[from].factor / cat.units[to].factor;
+      formulaText.textContent = `1 ${from} = ${fmtNum(f)} ${to}`;
+    } else {
+      formulaText.textContent = `Temperature conversion: ${from} → ${to}`;
+    }
+  }
+
+  chips.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip');
+    if (!btn) return;
+    chips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    currentCat = btn.dataset.cat;
+    populateUnits(currentCat);
+    convert();
+  });
+
+  fromUnit.addEventListener('change', convert);
+  toUnit.addEventListener('change', convert);
+  inputVal.addEventListener('input', convert);
+
+  document.getElementById('swapBtn').addEventListener('click', () => {
+    const a = fromUnit.value;
+    fromUnit.value = toUnit.value;
+    toUnit.value = a;
+    const v = outputVal.value;
+    if (v) inputVal.value = parseFloat(v.replace(/,/g,'')) || inputVal.value;
+    convert();
+  });
+
+  document.querySelectorAll('.mode-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      currentMode = t.dataset.mode;
+      if (currentMode === 'converter') {
+        converterCard.style.display = '';
+        stdCalc.classList.remove('show');
+        chips.style.display = '';
+      } else {
+        converterCard.style.display = 'none';
+        stdCalc.classList.add('show');
+        chips.style.display = 'none';
+      }
+    });
+  });
+
+  // Standard calculator
+  const stdVal = document.getElementById('stdVal');
+  const stdExpr = document.getElementById('stdExpr');
+  let stdCurrent = '0';
+  let stdPrev = null;
+  let stdOp = null;
+  let stdReset = false;
+
+  function updateStd() {
+    stdVal.textContent = stdCurrent;
+    stdExpr.textContent = (stdPrev !== null ? stdPrev + ' ' + (stdOp||'') : '');
+  }
+
+  document.querySelector('.std-grid').addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.num !== undefined) {
+      const n = b.dataset.num;
+      if (stdReset) { stdCurrent = (n === '.' ? '0.' : n); stdReset = false; }
+      else {
+        if (n === '.' && stdCurrent.includes('.')) return;
+        if (stdCurrent === '0' && n !== '.') stdCurrent = n;
+        else stdCurrent += n;
+      }
+      updateStd();
+      return;
+    }
+    if (b.dataset.op) {
+      const op = b.dataset.op;
+      if (stdPrev !== null && !stdReset) {
+        stdCurrent = String(calc(stdPrev, stdCurrent, stdOp));
+        stdPrev = stdCurrent;
+      } else {
+        stdPrev = stdCurrent;
+      }
+      stdOp = op;
+      stdReset = true;
+      updateStd();
+      return;
+    }
+    const act = b.dataset.act;
+    if (act === 'clear') {
+      stdCurrent = '0'; stdPrev = null; stdOp = null; stdReset = false; updateStd();
+    } else if (act === 'sign') {
+      stdCurrent = String(-parseFloat(stdCurrent));
+      updateStd();
+    } else if (act === 'percent') {
+      stdCurrent = String(parseFloat(stdCurrent) / 100);
+      updateStd();
+    } else if (act === 'equals') {
+      if (stdPrev !== null && stdOp) {
+        stdCurrent = String(calc(stdPrev, stdCurrent, stdOp));
+        stdPrev = null; stdOp = null; stdReset = true;
+        updateStd();
+      }
+    }
+  });
+
+  function calc(a, b, op) {
+    a = parseFloat(a); b = parseFloat(b);
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b === 0 ? NaN : a / b;
+    }
+    return b;
+  }
+
+  // Hero stat count-up
+  const animated = new Set();
+  function countUp(el) {
+    const target = parseInt(el.dataset.target, 10);
+    const dur = 1600;
+    const start = performance.now();
+    function step(t) {
+      const p = Math.min((t - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.floor(eased * target);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+  function animateStats() {
+    document.querySelectorAll('[data-target]').forEach(el => {
+      if (!animated.has(el)) { animated.add(el); countUp(el); }
+    });
+  }
+  setTimeout(animateStats, 500);
+  const statObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) animateStats();
+    });
+  }, { threshold: 0.2 });
+  const hs = document.querySelector('.hero-stats');
+  if (hs) statObserver.observe(hs);
+
+  // Reveal on scroll
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // Hamburger
+  const ham = document.getElementById('hamburger');
+  const mm = document.getElementById('mobileMenu');
+  ham.addEventListener('click', () => mm.classList.toggle('open'));
+  mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mm.classList.remove('open')));
+
+  // Contact form
+  document.getElementById('contactForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    showToast('Your message has been sent! Thank you.');
+    e.target.reset();
+  });
+
+  // Toast
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._tm);
+    t._tm = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Init
+  populateUnits(currentCat);
+  convert();
+})();
+</script>
+</body>
+</html>

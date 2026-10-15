@@ -1,0 +1,37 @@
+name: Deploy to Namecheap Hosting
+
+# Triggers the deployment every time code is pushed to the main branch
+on:
+  push:
+    branches:
+      - main
+  # Allows manual deployment from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Get the latest code from GitHub
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Upload files to Namecheap hosting via FTP
+      # Uses your Namecheap "FTP Username" and "FTP Password"
+      # from cPanel > Files > FTP Accounts
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /public_html/
+          protocol: ftps
+          port: 21
+          # Delete local files on server that are no longer in repo
+          dangerous-clean-slate: false
+          # Exclude git files from deployment
+          exclude: |
+            .git*
+            .github/**
